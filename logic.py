@@ -22,6 +22,7 @@ class Project:
         for i, column in enumerate(cursor.description):
             if column[0] in cls.__dataclass_fields__:
                 setattr(project, column[0], row[i])
+        return project
 
 
 
