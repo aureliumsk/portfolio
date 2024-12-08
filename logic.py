@@ -20,7 +20,7 @@ class Project:
     def factory(cls, cursor: sqlite3.Cursor, row: tuple[str | int, ...]) -> "Project":
         project = Project()
         for i, column in enumerate(cursor.description):
-            if column in cls.__dataclass_fields__:
+            if column[0] in cls.__dataclass_fields__:
                 setattr(project, column, row[i])
 
 
