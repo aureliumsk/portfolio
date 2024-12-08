@@ -3,6 +3,7 @@ from config import DATABASE
 
 skills = [ (_,) for _ in (['Python', 'SQL', 'API', 'Telegram'])]
 statuses = [ (_,) for _ in (['На этапе проектирования', 'В процессе разработки', 'Разработан. Готов к использованию.', 'Обновлен', 'Завершен. Не поддерживается'])]
+DEFAULT_ICON = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M80 160c0-35.3 28.7-64 64-64l32 0c35.3 0 64 28.7 64 64l0 3.6c0 21.8-11.1 42.1-29.4 53.8l-42.2 27.1c-25.2 16.2-40.4 44.1-40.4 74l0 1.4c0 17.7 14.3 32 32 32s32-14.3 32-32l0-1.4c0-8.2 4.2-15.8 11-20.2l42.2-27.1c36.6-23.6 58.8-64.1 58.8-107.7l0-3.6c0-70.7-57.3-128-128-128l-32 0C73.3 32 16 89.3 16 160c0 17.7 14.3 32 32 32s32-14.3 32-32zm80 320a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/></svg>'
 
 class DB_Manager:
     def __init__(self, database: str):
@@ -39,7 +40,8 @@ class DB_Manager:
                     project_name TEXT UNIQUE,
                     description TEXT,
                     url TEXT,
-                    status_id INTEGER REFERENCES status(id)
+                    status_id INTEGER REFERENCES status(status_id)
+                    icon_content BLOB
                 )
                 """
             )
@@ -47,8 +49,8 @@ class DB_Manager:
                 """
                 CREATE TABLE IF NOT EXISTS projectskills
                 (
-                    skill_id INTEGER REFERENCES skills(id),
-                    project_id INTEGER REFERENCES projects(id)
+                    skill_id INTEGER REFERENCES skills(skill_id),
+                    project_id INTEGER REFERENCES projects(project_id)
                 )
                 """
             )
@@ -88,7 +90,7 @@ class DB_Manager:
         project_id = self.__select_data(sql, (project_name, user_id))[0][0]
         skill_id = self.__select_data('SELECT skill_id FROM skills WHERE skill_name = ?', (skill,))[0][0]
         data = [(project_id, skill_id)]
-        sql = 'INSERT OR IGNORE INTO projectskills VALUES(?, ?)'
+        sql = 'INSERT OR IGNORE INTO projectskills (project_id, skill_id) VALUES(?, ?)'
         self.__executemany(sql, data)
 
     def set_desc_by_name(self, project_name: str, user_id: int, desc: str) -> None:
@@ -150,3 +152,7 @@ WHERE project_name=? AND user_id=?
     def delete_skill(self, project_id, skill_id):
         sql = "DELETE FROM skills WHERE skill_id = ? AND project_id = ?"
         self.__executemany(sql, [(skill_id, project_id)])
+
+    def set_icon(self, project_id: int, icon_content: bytes) -> None:
+        sql = "UPDATE projects SET icon = ? WHERE project_id = ?"
+        self.__executemany(sql, [(project_id, icon_content)])
