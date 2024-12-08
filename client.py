@@ -1,13 +1,13 @@
 from argparse import ArgumentParser
 from config import DATABASE
-from logic import DB_Manager
+from logic import DBManager
 
 def main():
     parser = ArgumentParser("portfolio")
     parser.add_argument("--type", "-t", choices=["project", "status"], dest="type", default="project")
     parser.add_argument("data", nargs="+")
     args = parser.parse_args()
-    db = DB_Manager(DATABASE)
+    db = DBManager(DATABASE)
     db.default_insert()
     name, url, status_id = args.data[:3]
     status_id = int(status_id)
